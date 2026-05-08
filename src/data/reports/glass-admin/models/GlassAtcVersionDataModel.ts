@@ -33,6 +33,7 @@ const DDDDataModel: Codec<DDDData> = Schema.object({
     SALT: Schema.string,
     DDD: Schema.number,
     DDD_UNIT: Schema.string,
+    DDD_GRAMS: Schema.nullable(Schema.number),
     DDD_STD: Schema.number,
     NOTES: Schema.nullable(Schema.string),
 });
@@ -112,7 +113,7 @@ const UnitsDataModel: Codec<UnitsData> = Schema.object({
     BASE_CONV: Schema.number,
     UNIT: Schema.string,
     NAME: Schema.string,
-    UNIT_FAMILY: Schema.string,
+    UNIT_STD: Schema.string,
     USE_STRENGTH: Schema.boolean,
     USE_VOLUME: Schema.boolean,
 });
