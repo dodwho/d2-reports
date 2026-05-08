@@ -11,7 +11,7 @@ type RouteOfAdministrationName = string;
 
 type UnitCode = string;
 type UnitName = string;
-type UnitFamilyName = string;
+type UnitSTDName = string;
 
 type SaltCode = string;
 type SaltName = string;
@@ -31,6 +31,7 @@ export type DDDData = {
     DDD: number;
     DDD_UNIT: UnitCode;
     DDD_STD: number;
+    DDD_GRAMS: number | null;
     NOTES: string | null;
 };
 
@@ -111,7 +112,7 @@ export type UnitsData = {
     BASE_CONV: number;
     UNIT: UnitCode;
     NAME: UnitName;
-    UNIT_FAMILY: UnitFamilyName;
+    UNIT_STD: UnitSTDName;
     USE_STRENGTH: boolean;
     USE_VOLUME: boolean;
 };
