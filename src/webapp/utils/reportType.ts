@@ -12,6 +12,8 @@ export function getReportType(): ReportType {
             return "glass";
         case report === "glass-admin":
             return "glass-admin";
+        case report === "glass-enrolment":
+            return "glass-enrolment";
         case report === "csy-summary-patient":
             return "summary-patient";
         case report === "csy-summary-mortality":

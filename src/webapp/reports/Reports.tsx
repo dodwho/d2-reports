@@ -20,6 +20,9 @@ import { TwoFactorMonitoringReport } from "./two-factor-monitor/TwoFactorMonitor
 import i18n from "../../locales";
 import { FileResourcesMonitoringReport } from "./file-resources-monitoring/FileResourceMonitoringReport";
 
+// Loaded on demand, so the other variants do not carry its code (or its map library) at all.
+const GLASSEnrolmentReport = React.lazy(() => import("./glass-enrolment/GLASSEnrolmentReport"));
+
 const widget = process.env.REACT_APP_REPORT_VARIANT || "";
 
 const Component: React.FC = () => {
@@ -59,6 +62,13 @@ const Component: React.FC = () => {
         }
         case "glass-admin": {
             return <GLASSAdminReport />;
+        }
+        case "glass-enrolment": {
+            return (
+                <React.Suspense fallback={null}>
+                    <GLASSEnrolmentReport />
+                </React.Suspense>
+            );
         }
         case "data-quality": {
             return <DataQualityReport />;

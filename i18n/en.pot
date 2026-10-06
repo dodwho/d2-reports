@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2025-07-01T06:38:17.444Z\n"
-"PO-Revision-Date: 2025-07-01T06:38:17.444Z\n"
+"POT-Creation-Date: 2026-09-30T14:11:20.990Z\n"
+"PO-Revision-Date: 2026-09-30T14:11:20.990Z\n"
 
 msgid "<No value>"
 msgstr ""
@@ -58,16 +58,6 @@ msgstr ""
 msgid "Are you sure?"
 msgstr ""
 
-msgid ""
-"Module 1 totals with missing sum or sum that does not match the "
-"auto-calculated"
-msgstr ""
-
-msgid ""
-"Module 1 (Subnational single entry) totals with missing sum or sum that "
-"does not match the auto-calculated"
-msgstr ""
-
 msgid "Metadata Admin Report"
 msgstr ""
 
@@ -107,12 +97,6 @@ msgstr ""
 msgid "created"
 msgstr ""
 
-msgid "WIDP Admin Templates Report"
-msgstr ""
-
-msgid "List of users with not allowed roles"
-msgstr ""
-
 msgid "ID"
 msgstr ""
 
@@ -140,13 +124,16 @@ msgstr ""
 msgid "Advanced filters"
 msgstr ""
 
+msgid "WIDP Admin Templates Report"
+msgstr ""
+
+msgid "List of users with not allowed roles"
+msgstr ""
+
 msgid "Failed to load org units"
 msgstr ""
 
 msgid "Period"
-msgstr ""
-
-msgid "CSY Audit Filters - Emergency Care"
 msgstr ""
 
 msgid "Register ID"
@@ -214,7 +201,7 @@ msgid ""
 "= not done"
 msgstr ""
 
-msgid "CSY Audit Filters - Trauma Care"
+msgid "CSY Audit Filters - Emergency Care"
 msgstr ""
 
 msgid "Mortality with low injury severity score"
@@ -285,7 +272,7 @@ msgstr ""
 msgid "(KTS=11-13) OR (MGAP=18-22) OR (GAP=11-18) OR (RTS=4-10)"
 msgstr ""
 
-msgid "CSY Summary Report - Mortality by Injury Severity"
+msgid "CSY Audit Filters - Trauma Care"
 msgstr ""
 
 msgid "Scoring System"
@@ -306,7 +293,7 @@ msgstr ""
 msgid "Summary Type"
 msgstr ""
 
-msgid "CSY Summary Report - Patient Characteristics"
+msgid "CSY Summary Report - Mortality by Injury Severity"
 msgstr ""
 
 msgid "Group"
@@ -346,6 +333,9 @@ msgid "Unknown"
 msgstr ""
 
 msgid "Patient Characteristics"
+msgstr ""
+
+msgid "CSY Summary Report - Patient Characteristics"
 msgstr ""
 
 msgid "Last Updated"
@@ -396,9 +386,6 @@ msgstr ""
 msgid "Data quality"
 msgstr ""
 
-msgid "File resources Monitoring"
-msgstr ""
-
 msgid "Delete confirmation"
 msgstr ""
 
@@ -409,6 +396,9 @@ msgid ""
 "This is an orphan fileResource. A file resource is orphan when it doesn't "
 "have any relation with an owner (document, dataValue, userAvatar, "
 "messageAttachment)"
+msgstr ""
+
+msgid "URL copied"
 msgstr ""
 
 msgid "FileResourceId"
@@ -438,13 +428,16 @@ msgstr ""
 msgid "Content MD5"
 msgstr ""
 
+msgid "Owner Url"
+msgstr ""
+
 msgid "Search by filename..."
 msgstr ""
 
 msgid "Download CSV"
 msgstr ""
 
-msgid "GLASS Admin Maintenance Report"
+msgid "File resources Monitoring"
 msgstr ""
 
 msgid "File"
@@ -518,7 +511,7 @@ msgstr ""
 msgid "Error when saving recalculation logic"
 msgstr ""
 
-msgid "GLASS Data Submission Report"
+msgid "GLASS Admin Maintenance Report"
 msgstr ""
 
 msgid "Questionnaire completed"
@@ -635,6 +628,704 @@ msgstr ""
 msgid "Error when trying to reject signal"
 msgstr ""
 
+msgid "GLASS Data Submission Report"
+msgstr ""
+
+msgid "Done — recorded in History, where it can be reverted."
+msgstr ""
+
+msgid "Nothing to change."
+msgstr ""
+
+msgid "Checking with DHIS2…"
+msgstr ""
+
+msgid "DHIS2 has checked this change and will accept it."
+msgstr ""
+
+msgid "Type {{count}} to confirm"
+msgid_plural "Type {{count}} to confirm"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Focal point saved"
+msgstr ""
+
+msgid "Add focal point"
+msgstr ""
+
+msgid "Edit focal point"
+msgstr ""
+
+msgid "Replace focal point"
+msgstr ""
+
+msgid "Country (enrolled in this module)"
+msgstr ""
+
+msgid ""
+"{{name}} will become a previous focal point, kept in History. Enter their "
+"successor below."
+msgstr ""
+
+msgid "First name"
+msgstr ""
+
+msgid "Family name"
+msgstr ""
+
+msgid "Function / title"
+msgstr ""
+
+msgid "Email"
+msgstr ""
+
+msgid "Not a valid email address"
+msgstr ""
+
+msgid "Telephone"
+msgstr ""
+
+msgid "Preferred language"
+msgstr ""
+
+msgid "Institution"
+msgstr ""
+
+msgid "Institution address"
+msgstr ""
+
+msgid "City"
+msgstr ""
+
+msgid "Postal code"
+msgstr ""
+
+msgid "In post since"
+msgstr ""
+
+msgid "Earlier than the person being replaced ({{date}})"
+msgstr ""
+
+msgid "Enter at least a name or an email address."
+msgstr ""
+
+msgid "Replace"
+msgstr ""
+
+msgid "Save"
+msgstr ""
+
+msgid "Focal point removed — kept in History"
+msgstr ""
+
+msgid "Remove focal point"
+msgstr ""
+
+msgid ""
+"{{name}} will no longer be shown for {{country}} — {{module}} in GLASS. "
+"Their details are kept in History as a previous focal point, and the "
+"removal can be reverted there."
+msgstr ""
+
+msgid "Remove"
+msgstr ""
+
+msgid "Recent changes"
+msgstr ""
+
+msgid "No changes recorded from this report yet."
+msgstr ""
+
+msgid "Full history"
+msgstr ""
+
+msgid "Country not found."
+msgstr ""
+
+msgid "Un-enrol"
+msgstr ""
+
+msgid "Re-enrol"
+msgstr ""
+
+msgid "Enrol"
+msgstr ""
+
+msgid "since {{date}}"
+msgstr ""
+
+msgid "This country is not in the enrolment program."
+msgstr ""
+
+msgid "Add it under Health"
+msgstr ""
+
+msgid "Recorded {{count}} times."
+msgid_plural "Recorded {{count}} times."
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Merge under Health"
+msgstr ""
+
+msgid "Counting users…"
+msgstr ""
+
+msgid "No focal point recorded."
+msgstr ""
+
+msgid "Previous focal points ({{count}})"
+msgid_plural "Previous focal points ({{count}})"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "until {{date}}"
+msgstr ""
+
+msgid "(no name)"
+msgstr ""
+
+msgid "No contact details"
+msgstr ""
+
+msgid "not updated since {{date}}"
+msgstr ""
+
+msgid "Edit"
+msgstr ""
+
+msgid "Replace with a successor"
+msgstr ""
+
+msgid "Change enrolment"
+msgstr ""
+
+msgid "Enrol {{count}}"
+msgid_plural "Enrol {{count}}"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Un-enrol {{count}}"
+msgid_plural "Un-enrol {{count}}"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Enrolment date"
+msgstr ""
+
+msgid "A date no later than today"
+msgstr ""
+
+msgid "Will be enrolled"
+msgstr ""
+
+msgid "Will be re-enrolled, keeping their previous enrolment and focal points"
+msgstr ""
+
+msgid "Will be un-enrolled"
+msgstr ""
+
+msgid "Skipped — already enrolled"
+msgstr ""
+
+msgid "Skipped — not enrolled"
+msgstr ""
+
+msgid "Skipped — not in the enrolment program yet (fix under Health)"
+msgstr ""
+
+msgid ""
+"The module appears for these countries once users with the module's user "
+"groups and the country in their organisation units reload GLASS."
+msgstr ""
+
+msgid ""
+"Un-enrolling cancels the enrolment; nothing is deleted. The module "
+"disappears from GLASS for the country, its focal points are kept, and it "
+"can be re-enrolled or reverted from History."
+msgstr ""
+
+msgid "Enrolled"
+msgstr ""
+
+msgid "No focal point"
+msgstr ""
+
+msgid "Inactive"
+msgstr ""
+
+msgid "Not in program"
+msgstr ""
+
+msgid "Enrolled since {{date}}"
+msgstr ""
+
+msgid "{{count}} focal point(s)"
+msgid_plural "{{count}} focal point(s)"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "{{count}} duplicate enrolments — see Health"
+msgid_plural "{{count}} duplicate enrolments — see Health"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Active enrolments"
+msgstr ""
+
+msgid "across {{count}} countries"
+msgid_plural "across {{count}} countries"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Without a focal point"
+msgstr ""
+
+msgid "nobody to contact"
+msgstr ""
+
+msgid "Inactive enrolments"
+msgstr ""
+
+msgid "cancelled or completed"
+msgstr ""
+
+msgid "Duplicated"
+msgstr ""
+
+msgid "country and module pairs"
+msgstr ""
+
+msgid "Countries"
+msgstr ""
+
+msgid "Map"
+msgstr ""
+
+msgid "Focal points"
+msgstr ""
+
+msgid "Gaps"
+msgstr ""
+
+msgid "Health"
+msgstr ""
+
+msgid "History"
+msgstr ""
+
+msgid "GLASS Country Enrolment"
+msgstr ""
+
+msgid ""
+"Which countries use which GLASS modules, who their focal points are, and "
+"what has changed."
+msgstr ""
+
+msgid ""
+"You do not administer any GLASS module. Access comes from a module's "
+"approval user group (for example 'AMR-AMC admin'); ask a GLASS "
+"administrator to add you."
+msgstr ""
+
+msgid "Loading enrolments…"
+msgstr ""
+
+msgid "Zoom to region"
+msgstr ""
+
+msgid "Whole world"
+msgstr ""
+
+msgid "Loading country shapes…"
+msgstr ""
+
+msgid "Map of enrolment in {{module}}"
+msgstr ""
+
+msgid ""
+"For internal administration only. Boundaries are those stored in DHIS2 and "
+"have not been cleared for publication. The designations employed and the "
+"presentation of material on this map do not imply the expression of any "
+"opinion whatsoever on the part of WHO concerning the legal status of any "
+"country, territory, city or area or of its authorities, or concerning the "
+"delimitation of its frontiers or boundaries."
+msgstr ""
+
+msgid "Current"
+msgstr ""
+
+msgid "Enrolment inactive"
+msgstr ""
+
+msgid "Previous (until {{date}})"
+msgstr ""
+
+msgid "Code"
+msgstr ""
+
+msgid "Function"
+msgstr ""
+
+msgid "Last updated"
+msgstr ""
+
+msgid "State"
+msgstr ""
+
+msgid "Open country"
+msgstr ""
+
+msgid "Search name, email, country or institution"
+msgstr ""
+
+msgid "Copy emails of the listed current focal points"
+msgstr ""
+
+msgid "{{count}} email addresses copied — paste into the To field"
+msgid_plural "{{count}} email addresses copied — paste into the To field"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "All modules"
+msgstr ""
+
+msgid "Region"
+msgstr ""
+
+msgid "All regions"
+msgstr ""
+
+msgid "Include previous focal points"
+msgstr ""
+
+msgid "Enrol in a module…"
+msgstr ""
+
+msgid "Un-enrol from a module…"
+msgstr ""
+
+msgid "Search country or ISO code"
+msgstr ""
+
+msgid "Status in module"
+msgstr ""
+
+msgid "Any status"
+msgstr ""
+
+msgid "No email address"
+msgstr ""
+
+msgid "Not updated for {{years}}+ years"
+msgstr ""
+
+msgid "Enrolled since"
+msgstr ""
+
+msgid "What is missing"
+msgstr ""
+
+msgid "Known emails"
+msgstr ""
+
+msgid "Search country"
+msgstr ""
+
+msgid "Download chase list"
+msgstr ""
+
+msgid "Copy the listed emails, to ask for an update"
+msgstr ""
+
+msgid "{{count}} active enrolments need attention."
+msgid_plural "{{count}} active enrolments need attention."
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Anything"
+msgstr ""
+
+msgid "Inactive enrolments (cancelled or completed)"
+msgstr ""
+
+msgid "Duplicated enrolments"
+msgstr ""
+
+msgid "Countries not in the enrolment program"
+msgstr ""
+
+msgid "Empty focal point entries"
+msgstr ""
+
+msgid ""
+"These countries no longer see the module in GLASS. Usually deliberate; but "
+"an enrolment marked 'complete' in the Tracker app by mistake also lands "
+"here. Re-enrol any that should be active."
+msgstr ""
+
+msgid ""
+"The same country recorded more than once for a module, usually from "
+"repeated manual enrolment. Merging keeps the oldest active enrolment and "
+"copies across any focal points only the duplicates held."
+msgstr ""
+
+msgid ""
+"These organisation units are not assigned to the enrolment program, so "
+"DHIS2 refuses to enrol them. Most are former states or territories that "
+"should stay out."
+msgstr ""
+
+msgid ""
+"Blank focal point entries, created automatically when a country is enrolled "
+"through the Capture app. They hold nothing and clutter GLASS's country "
+"information page."
+msgstr ""
+
+msgid "enrolled {{date}}"
+msgstr ""
+
+msgid "recorded {{count}} times"
+msgid_plural "recorded {{count}} times"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "not assigned to the program"
+msgstr ""
+
+msgid "{{count}} empty entries"
+msgid_plural "{{count}} empty entries"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Re-enrol {{count}}"
+msgid_plural "Re-enrol {{count}}"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Each enrolment is set back to active, keeping its date and focal points."
+msgstr ""
+
+msgid "Merge duplicates"
+msgstr ""
+
+msgid "Merge {{count}}"
+msgid_plural "Merge {{count}}"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid ""
+"The redundant enrolments are cancelled, not deleted, and any focal points "
+"only they held are copied onto the one kept. Revertible from History."
+msgstr ""
+
+msgid "Add to the enrolment program"
+msgstr ""
+
+msgid "Add {{count}}"
+msgid_plural "Add {{count}}"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Delete empty entries"
+msgstr ""
+
+msgid "Delete {{count}}"
+msgid_plural "Delete {{count}}"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid ""
+"Only entries with no details at all are deleted. Real focal points are not "
+"touched."
+msgstr ""
+
+msgid "Detail"
+msgstr ""
+
+msgid "Check"
+msgstr ""
+
+msgid ""
+"Your account may not change the enrolment program, so a DHIS2 metadata "
+"administrator has to add any that should be enrollable."
+msgstr ""
+
+msgid "Select rows, then use the action above the table."
+msgstr ""
+
+msgid "Selected"
+msgstr ""
+
+msgid "Reverted {{date}}"
+msgstr ""
+
+msgid "Applied"
+msgstr ""
+
+msgid "Interrupted"
+msgstr ""
+
+msgid "When (UTC)"
+msgstr ""
+
+msgid "By"
+msgstr ""
+
+msgid "Action"
+msgstr ""
+
+msgid "Modules"
+msgstr ""
+
+msgid "Revert"
+msgstr ""
+
+msgid "Search country, module or person"
+msgstr ""
+
+msgid ""
+"Nothing recorded yet. Every change made from this report will appear here, "
+"with a way to undo it. DHIS2 itself keeps no usable history of this "
+"program, so this log starts with this report."
+msgstr ""
+
+msgid "Select a change and choose Revert to undo it."
+msgstr ""
+
+msgid "Later changes to the same items will also be undone"
+msgstr ""
+
+msgid "new enrolment"
+msgstr ""
+
+msgid "enrolment reactivated"
+msgstr ""
+
+msgid "enrolment cancelled"
+msgstr ""
+
+msgid "focal point added"
+msgstr ""
+
+msgid "focal point removed"
+msgstr ""
+
+msgid "focal point edited"
+msgstr ""
+
+msgid "added to program"
+msgstr ""
+
+msgid "Enrolled, no focal point"
+msgstr ""
+
+msgid "Inactive (cancelled or completed)"
+msgstr ""
+
+msgid "Not enrolled"
+msgstr ""
+
+msgid "Cannot be enrolled"
+msgstr ""
+
+msgid "Un-enrolled"
+msgstr ""
+
+msgid "Merged duplicates"
+msgstr ""
+
+msgid "Added to program"
+msgstr ""
+
+msgid "Focal point added"
+msgstr ""
+
+msgid "Focal point edited"
+msgstr ""
+
+msgid "Focal point replaced"
+msgstr ""
+
+msgid "Focal point removed"
+msgstr ""
+
+msgid "Empty entries deleted"
+msgstr ""
+
+msgid "Reverted"
+msgstr ""
+
+msgid "Complete"
+msgstr ""
+
+msgid "Incomplete"
+msgstr ""
+
+msgid "Submit"
+msgstr ""
+
+msgid "Revoke"
+msgstr ""
+
+msgid "Activate monitoring"
+msgstr ""
+
+msgid "Deactivate monitoring"
+msgstr ""
+
+msgid "Check Difference"
+msgstr ""
+
+msgid "Check differences"
+msgstr ""
+
+msgid "Submitted"
+msgstr ""
+
+msgid "Ready for submission"
+msgstr ""
+
+msgid "Data sets"
+msgstr ""
+
+msgid "Periods"
+msgstr ""
+
+msgid "Completion status"
+msgstr ""
+
+msgid "Submission status"
+msgstr ""
+
+msgid "Error when trying to approve data set"
+msgstr ""
+
+msgid "Error when trying to unsubmit data set"
+msgstr ""
+
+msgid "Error when trying to submit data set"
+msgstr ""
+
+msgid "Data set"
+msgstr ""
+
+msgid "Attribute"
+msgstr ""
+
+msgid "Modification Count"
+msgstr ""
+
+msgid "Last modification date"
+msgstr ""
+
+msgid "Last date of submission"
+msgstr ""
+
+msgid "Last date of approval"
+msgstr ""
+
 msgid "Data Element"
 msgstr ""
 
@@ -663,81 +1354,6 @@ msgid "Error when trying to check difference in data values"
 msgstr ""
 
 msgid "Malaria Data Approval Report"
-msgstr ""
-
-msgid "Data set"
-msgstr ""
-
-msgid "Attribute"
-msgstr ""
-
-msgid "Completion status"
-msgstr ""
-
-msgid "Submission status"
-msgstr ""
-
-msgid "Modification Count"
-msgstr ""
-
-msgid "Last modification date"
-msgstr ""
-
-msgid "Last date of submission"
-msgstr ""
-
-msgid "Last date of approval"
-msgstr ""
-
-msgid "Complete"
-msgstr ""
-
-msgid "Error when trying to complete data set"
-msgstr ""
-
-msgid "Incomplete"
-msgstr ""
-
-msgid "Error when trying to incomplete data set"
-msgstr ""
-
-msgid "Submit"
-msgstr ""
-
-msgid "Error when trying to submit data set"
-msgstr ""
-
-msgid "Revoke"
-msgstr ""
-
-msgid "Error when trying to unsubmit data set"
-msgstr ""
-
-msgid "Activate monitoring"
-msgstr ""
-
-msgid "Deactivate monitoring"
-msgstr ""
-
-msgid "Check Difference"
-msgstr ""
-
-msgid "Check differences"
-msgstr ""
-
-msgid "Submitted"
-msgstr ""
-
-msgid "Ready for submission"
-msgstr ""
-
-msgid "Data sets"
-msgstr ""
-
-msgid "Periods"
-msgstr ""
-
-msgid "Malaria Data Subscription Report"
 msgstr ""
 
 msgid "Subscription status"
@@ -791,7 +1407,7 @@ msgstr ""
 msgid "Data Element Groups"
 msgstr ""
 
-msgid "NHWA Data Approval Status Report"
+msgid "Malaria Data Subscription Report"
 msgstr ""
 
 msgid "Approval status"
@@ -800,10 +1416,13 @@ msgstr ""
 msgid "Last updated value"
 msgstr ""
 
-msgid "Approving data sets..."
+msgid "Error when trying to complete data set"
 msgstr ""
 
-msgid "Error when trying to approve data set"
+msgid "Error when trying to incomplete data set"
+msgstr ""
+
+msgid "Approving data sets..."
 msgstr ""
 
 msgid "Unapprove"
@@ -813,6 +1432,9 @@ msgid "Unapproving data sets..."
 msgstr ""
 
 msgid "Error when trying to unapprove data set"
+msgstr ""
+
+msgid "NHWA Data Approval Status Report"
 msgstr ""
 
 msgid "Category Option Combo"
@@ -833,22 +1455,19 @@ msgstr ""
 msgid "Updating values..."
 msgstr ""
 
-msgid "NHWA Comments Report"
-msgstr ""
-
 msgid "Category option combo"
 msgstr ""
 
 msgid "Value"
 msgstr ""
 
-msgid "Last updated"
-msgstr ""
-
 msgid "Stored by"
 msgstr ""
 
 msgid "Toggle filters"
+msgstr ""
+
+msgid "NHWA Comments Report"
 msgstr ""
 
 msgid "No values to update"
@@ -895,16 +1514,20 @@ msgstr ""
 msgid "Module 1 (subnational) with fixes for organisation unit name"
 msgstr ""
 
-msgid "User Two Factor Monitoring"
+msgid ""
+"Module 1 totals with missing sum or sum that does not match the "
+"auto-calculated"
+msgstr ""
+
+msgid ""
+"Module 1 (Subnational single entry) totals with missing sum or sum that "
+"does not match the auto-calculated"
 msgstr ""
 
 msgid "External auth"
 msgstr ""
 
 msgid "TwoFA"
-msgstr ""
-
-msgid "Email"
 msgstr ""
 
 msgid "Disabled"
@@ -914,6 +1537,9 @@ msgid "User groups"
 msgstr ""
 
 msgid "Open ID"
+msgstr ""
+
+msgid "User Two Factor Monitoring"
 msgstr ""
 
 msgctxt "Facility Dispo = Morgue or Died"

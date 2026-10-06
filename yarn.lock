@@ -4445,6 +4445,13 @@
   dependencies:
     classnames "*"
 
+"@types/d3-geo@1.12.3":
+  version "1.12.3"
+  resolved "https://registry.yarnpkg.com/@types/d3-geo/-/d3-geo-1.12.3.tgz#512ebe735cb1cdf5f87ad59608416e2e9e868c5a"
+  integrity sha512-yZbPb7/5DyL/pXkeOmZ7L5ySpuGr4H48t1cuALjnJy5sXQqmSSAYBiwa6Ya/XpWKX2rJqGDDubmh3nOaopOpeA==
+  dependencies:
+    "@types/geojson" "*"
+
 "@types/eslint@^7.2.6":
   version "7.28.0"
   resolved "https://registry.npmjs.org/@types/eslint/-/eslint-7.28.0.tgz"
@@ -4467,6 +4474,11 @@
   version "1.20.4"
   resolved "https://registry.npmjs.org/@types/expect/-/expect-1.20.4.tgz"
   integrity sha512-Q5Vn3yjTDyCMV50TB6VRIbQNxSE4OmZR86VSbGaNpfUolm0iePBB4KdEEHmxoY5sT2+2DIvXW0rvMDP2nHZ4Mg==
+
+"@types/geojson@*":
+  version "7946.0.16"
+  resolved "https://registry.yarnpkg.com/@types/geojson/-/geojson-7946.0.16.tgz#8ebe53d69efada7044454e3305c19017d97ced2a"
+  integrity sha512-6C8nqWur3j98U6+lXDfTUWIfgvZU+EumvpHKcYjujKH7woYyLj2sUmff0tRhrqM7BohUw7Pz3ZB1jj2gW9Fvmg==
 
 "@types/glob@^7.1.1":
   version "7.1.4"
@@ -7731,6 +7743,18 @@ d2@~31.7:
   integrity sha512-+ubKyPWKxUz90g5RHCYIt4KxKPzcCOBvDS7X0076XSycecfx4qvtkGBcKyFmXdz27iwTLUpNtruL9pUK9aTi/A==
   dependencies:
     isomorphic-fetch "^2.2.1"
+
+d3-array@1:
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/d3-array/-/d3-array-1.2.4.tgz#635ce4d5eea759f6f605863dbcfc30edc737f71f"
+  integrity sha512-KHW6M86R+FUPYGb3R5XiYjXPq7VzwxZ22buHhAEVG5ztoEcZZMLov530mmccaqA1GghZArjQV46fuc8kUqhhHw==
+
+d3-geo@1.12.1:
+  version "1.12.1"
+  resolved "https://registry.yarnpkg.com/d3-geo/-/d3-geo-1.12.1.tgz#7fc2ab7414b72e59fbcbd603e80d9adc029b035f"
+  integrity sha512-XG4d1c/UJSEX9NfU02KwBL6BYPj8YKHxgBEw5om2ZnTRSbIcego6dhHwcxuSR3clxh0EpE38os1DVPOmnYtTPg==
+  dependencies:
+    d3-array "1"
 
 d@1, d@^1.0.1:
   version "1.0.1"

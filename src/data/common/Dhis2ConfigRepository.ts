@@ -64,6 +64,14 @@ const base: Record<ReportType, BaseConfigType> = {
         constantCode: "",
         approvalWorkflows: { namePrefix: "AMR" },
     },
+    // Enrolment works entirely off the tracker program and the glass datastore, so it needs none of
+    // the dataSet/sqlView preloading the other variants do.
+    "glass-enrolment": {
+        dataSets: { namePrefix: undefined, nameExcluded: undefined },
+        sqlViewNames: [],
+        constantCode: "",
+        approvalWorkflows: { namePrefix: "" },
+    },
     auditEmergency: {
         dataSets: { namePrefix: undefined, nameExcluded: undefined },
         sqlViewNames: [],
