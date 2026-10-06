@@ -4,6 +4,7 @@ export type ReportType =
     | "mal-subscription"
     | "glass"
     | "glass-admin"
+    | "glass-enrolment"
     | "auditEmergency"
     | "auditTrauma"
     | "summary-patient"
