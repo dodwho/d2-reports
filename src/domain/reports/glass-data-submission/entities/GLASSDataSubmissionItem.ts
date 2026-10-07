@@ -24,9 +24,12 @@ export interface GLASSDataSubmissionItem {
         changedAt: string;
         from: Status;
         to: Status;
+        changedBy?: StatusChangedBy;
     }[];
     creationDate: string;
 }
+
+export type StatusChangedBy = { id: Id; username: string };
 
 export interface EARDataSubmissionItem {
     creationDate: string;
@@ -42,6 +45,7 @@ export interface EARDataSubmissionItem {
         changedAt: string;
         from: Status;
         to: Status;
+        changedBy?: StatusChangedBy;
     }[];
 }
 
