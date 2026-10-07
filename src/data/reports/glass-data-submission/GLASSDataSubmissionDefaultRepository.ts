@@ -9,6 +9,7 @@ import {
     EARSubmissionItemIdentifier,
     getUserModules,
     Status,
+    StatusChangedBy,
 } from "../../../domain/reports/glass-data-submission/entities/GLASSDataSubmissionItem";
 import {
     EARDataSubmissionOptions,
@@ -890,7 +891,7 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
             const objects = await this.globalStorageClient.listObjectsInCollection<GLASSDataSubmissionItem>(namespace);
 
             await this.approveByModule(modules, items);
-            const newSubmissionValues = this.getNewSubmissionValues(items, objects, "APPROVED");
+            const newSubmissionValues = await this.getNewSubmissionValues(items, objects, "APPROVED");
             const recipients = await this.getRecipientUsers(items, modules);
 
             const message = await this.getNotificationText(items, modules, "approved");
@@ -899,7 +900,7 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
             return await this.globalStorageClient.saveObject<GLASSDataSubmissionItem[]>(namespace, newSubmissionValues);
         } else if (signals) {
             const objects = await this.globalStorageClient.listObjectsInCollection<EARDataSubmissionItem>(namespace);
-            const newSubmissionValues = this.getNewEARSubmissionValues(signals, objects, "APPROVED");
+            const newSubmissionValues = await this.getNewEARSubmissionValues(signals, objects, "APPROVED");
             const recipients = await this.getEARRecipientUsers(signals, modules);
 
             const message = this.getEARNotificationText(signals, modules, "approved");
@@ -1185,7 +1186,7 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
 
         if (!_.isEmpty(items)) {
             const objects = await this.globalStorageClient.listObjectsInCollection<GLASSDataSubmissionItem>(namespace);
-            const newSubmissionValues = this.getNewSubmissionValues(
+            const newSubmissionValues = await this.getNewSubmissionValues(
                 items,
                 objects,
                 isDatasetUpdate ? "APPROVED" : "REJECTED"
@@ -1201,7 +1202,7 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
             return await this.globalStorageClient.saveObject<GLASSDataSubmissionItem[]>(namespace, newSubmissionValues);
         } else if (signals) {
             const objects = await this.globalStorageClient.listObjectsInCollection<EARDataSubmissionItem>(namespace);
-            const newSubmissionValues = this.getNewEARSubmissionValues(signals, objects, "REJECTED");
+            const newSubmissionValues = await this.getNewEARSubmissionValues(signals, objects, "REJECTED");
             const recipients = await this.getEARRecipientUsers(signals, modules);
 
             const notificationText = this.getEARNotificationText(signals, modules, "rejected");
@@ -1217,7 +1218,7 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
         const objects = await this.globalStorageClient.listObjectsInCollection<GLASSDataSubmissionItem>(namespace);
         const modules = await this.getModules();
 
-        const newSubmissionValues = this.getNewSubmissionValues(items, objects, "NOT_COMPLETED");
+        const newSubmissionValues = await this.getNewSubmissionValues(items, objects, "NOT_COMPLETED");
         const recipients = await this.getRecipientUsers(items, modules);
 
         const message = await this.getNotificationText(items, modules, "reopened");
@@ -1233,7 +1234,7 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
         const objects = await this.globalStorageClient.listObjectsInCollection<GLASSDataSubmissionItem>(namespace);
         const modules = await this.getModules();
 
-        const newSubmissionValues = this.getNewSubmissionValues(items, objects, "UPDATE_REQUEST_ACCEPTED");
+        const newSubmissionValues = await this.getNewSubmissionValues(items, objects, "UPDATE_REQUEST_ACCEPTED");
         const recipients = await this.getRecipientUsers(items, modules);
 
         const message = await this.getNotificationText(items, modules, "update request accepted");
@@ -1320,11 +1321,18 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
         });
     }
 
-    private getNewSubmissionValues(
+    private async getChangedBy(): Promise<StatusChangedBy> {
+        const { id, username } = await this.api.get<StatusChangedBy>("/me?fields=id,username").getData();
+        return { id, username };
+    }
+
+    private async getNewSubmissionValues(
         items: GLASSDataSubmissionItemIdentifier[],
         objects: GLASSDataSubmissionItem[],
         status: Status
     ) {
+        const changedBy = await this.getChangedBy();
+
         return objects.map(object => {
             const isNewItem = !!items.find(
                 item =>
@@ -1337,17 +1345,20 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
                 changedAt: new Date().toISOString(),
                 from: object.status,
                 to: status,
+                changedBy,
             };
 
             return isNewItem ? { ...object, status, statusHistory: [...object.statusHistory, statusHistory] } : object;
         });
     }
 
-    private getNewEARSubmissionValues(
+    private async getNewEARSubmissionValues(
         signals: EARSubmissionItemIdentifier[],
         objects: EARDataSubmissionItem[],
         status: Status
     ) {
+        const changedBy = await this.getChangedBy();
+
         return objects.map(object => {
             const isNewItem = !!signals.find(
                 signal =>
@@ -1358,6 +1369,7 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
                 changedAt: new Date().toISOString(),
                 from: object.status,
                 to: status,
+                changedBy,
             };
 
             return isNewItem
