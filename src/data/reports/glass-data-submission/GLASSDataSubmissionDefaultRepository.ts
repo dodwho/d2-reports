@@ -349,8 +349,8 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
                         id: true,
                     },
                     filter: {
-                        name: {
-                            eq: "Kosovo",
+                        code: {
+                            eq: "XKX",
                         },
                         level: {
                             eq: "3",

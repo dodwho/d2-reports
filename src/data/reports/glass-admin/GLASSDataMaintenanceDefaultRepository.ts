@@ -339,8 +339,8 @@ export class GLASSDataMaintenanceDefaultRepository implements GLASSDataMaintenan
                         id: true,
                     },
                     filter: {
-                        name: {
-                            eq: "Kosovo",
+                        code: {
+                            eq: "XKX",
                         },
                         level: {
                             eq: "3",
