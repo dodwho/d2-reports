@@ -6,7 +6,8 @@ import {
 import { DataStoreStorageClient } from "../../common/clients/storage/DataStoreStorageClient";
 import { StorageClient } from "../../common/clients/storage/StorageClient";
 import { Instance } from "../../common/entities/Instance";
-import { Namespaces } from "../../common/clients/storage/Namespaces";
+import { glassDataStoreNamespace, Namespaces } from "../../common/clients/storage/Namespaces";
+import { copyDataStoreSharing } from "../../common/clients/storage/dataStoreSharing";
 import { NamedRef, Ref } from "../../../domain/common/entities/Ref";
 import { D2Api, SelectedPick } from "../../../types/d2-api";
 import {
@@ -202,20 +203,14 @@ export class GLASSDataMaintenanceDefaultRepository implements GLASSDataMaintenan
         selectedItems?: ATCItemIdentifier[]
     ): Promise<void> {
         const atcItems = await this.getATCItems(namespace);
+        const [versionKey, updatedATCItems] = selectedItems
+            ? [`ATC-${this.updateVersion(atcItems, selectedItems)}`, this.patchATCVersion(atcItems, selectedItems)]
+            : [`ATC-${year}-v1`, this.uploadNewATC(year, atcItems)];
 
-        if (selectedItems) {
-            const updatedVersion = this.updateVersion(atcItems, selectedItems);
-            const updatedATCItems = this.patchATCVersion(atcItems, selectedItems);
-            await this.globalStorageClient.saveObject<GlassAtcVersionData>(
-                `ATC-${updatedVersion}`,
-                glassAtcVersionData
-            );
-            await this.globalStorageClient.saveObject<ATCItem[]>(Namespaces.ATCS, updatedATCItems);
-        } else {
-            const updatedATCItems = this.uploadNewATC(year, atcItems);
-            await this.globalStorageClient.saveObject<GlassAtcVersionData>(`ATC-${year}-v1`, glassAtcVersionData);
-            await this.globalStorageClient.saveObject<ATCItem[]>(Namespaces.ATCS, updatedATCItems);
-        }
+        await this.globalStorageClient.saveObject<GlassAtcVersionData>(versionKey, glassAtcVersionData);
+        // Lock the new version like ATCs before ATCs lists it: a new key is writable by every logged-in user
+        await copyDataStoreSharing(this.api, glassDataStoreNamespace, Namespaces.ATCS, versionKey);
+        await this.globalStorageClient.saveObject<ATCItem[]>(Namespaces.ATCS, updatedATCItems);
     }
 
     async getRecalculationLogic(namespace: string): Promise<AMCRecalculation | undefined> {
