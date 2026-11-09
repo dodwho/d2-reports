@@ -38,6 +38,12 @@ import {
     TrackedEntitiesGetResponse,
 } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
 import { getUploadStatusSortKey } from "./getUploadStatusSortKey";
+import { checkStatusChange, saveStatusChange } from "./statusChangeStorage";
+import {
+    selectSignals,
+    selectSubmissions,
+    StatusChange,
+} from "../../../domain/reports/glass-data-submission/entities/StatusChange";
 
 interface CompleteDataSetRegistrationsResponse {
     completeDataSetRegistrations: Registration[] | undefined;
@@ -888,25 +894,28 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
         const modules = await this.getModules();
 
         if (!_.isEmpty(items)) {
-            const objects = await this.globalStorageClient.listObjectsInCollection<GLASSDataSubmissionItem>(namespace);
+            const change = submissionChange(items, ["PENDING_APPROVAL"], "APPROVED");
+            const changedBy = await this.getChangedBy();
+            await checkStatusChange(this.globalStorageClient, namespace, change, changedBy);
 
             await this.approveByModule(modules, items);
-            const newSubmissionValues = await this.getNewSubmissionValues(items, objects, "APPROVED");
             const recipients = await this.getRecipientUsers(items, modules);
 
             const message = await this.getNotificationText(items, modules, "approved");
             this.sendNotifications(message, message, [], recipients);
 
-            return await this.globalStorageClient.saveObject<GLASSDataSubmissionItem[]>(namespace, newSubmissionValues);
+            return await saveStatusChange(this.globalStorageClient, namespace, change, changedBy);
         } else if (signals) {
-            const objects = await this.globalStorageClient.listObjectsInCollection<EARDataSubmissionItem>(namespace);
-            const newSubmissionValues = await this.getNewEARSubmissionValues(signals, objects, "APPROVED");
+            const change = signalChange(signals, "APPROVED");
+            const changedBy = await this.getChangedBy();
+            await checkStatusChange(this.globalStorageClient, namespace, change, changedBy);
+
             const recipients = await this.getEARRecipientUsers(signals, modules);
 
             const message = this.getEARNotificationText(signals, modules, "approved");
             this.sendNotifications(message, message, [], recipients);
 
-            return await this.globalStorageClient.saveObject<EARDataSubmissionItem[]>(namespace, newSubmissionValues);
+            return await saveStatusChange(this.globalStorageClient, namespace, change, changedBy);
         }
     }
 
@@ -1185,12 +1194,13 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
         const modules = await this.getModules();
 
         if (!_.isEmpty(items)) {
-            const objects = await this.globalStorageClient.listObjectsInCollection<GLASSDataSubmissionItem>(namespace);
-            const newSubmissionValues = await this.getNewSubmissionValues(
-                items,
-                objects,
-                isDatasetUpdate ? "APPROVED" : "REJECTED"
-            );
+            // Rejecting an update request puts the submission back to APPROVED; rejecting a submission rejects it.
+            const change = isDatasetUpdate
+                ? submissionChange(items, ["PENDING_UPDATE_APPROVAL"], "APPROVED")
+                : submissionChange(items, ["PENDING_APPROVAL"], "REJECTED");
+            const changedBy = await this.getChangedBy();
+            await checkStatusChange(this.globalStorageClient, namespace, change, changedBy);
+
             const recipients = await this.getRecipientUsers(items, modules);
 
             const body = `Please review the messages and the reports to find about the causes of this rejection. You have to upload new datasets.\n Reason for rejection:\n ${message}`;
@@ -1199,10 +1209,12 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
 
             await this.postDataSetRegistration(items, modules, false);
 
-            return await this.globalStorageClient.saveObject<GLASSDataSubmissionItem[]>(namespace, newSubmissionValues);
+            return await saveStatusChange(this.globalStorageClient, namespace, change, changedBy);
         } else if (signals) {
-            const objects = await this.globalStorageClient.listObjectsInCollection<EARDataSubmissionItem>(namespace);
-            const newSubmissionValues = await this.getNewEARSubmissionValues(signals, objects, "REJECTED");
+            const change = signalChange(signals, "REJECTED");
+            const changedBy = await this.getChangedBy();
+            await checkStatusChange(this.globalStorageClient, namespace, change, changedBy);
+
             const recipients = await this.getEARRecipientUsers(signals, modules);
 
             const notificationText = this.getEARNotificationText(signals, modules, "rejected");
@@ -1210,15 +1222,17 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
 
             this.sendNotifications(notificationText, body, [], recipients);
 
-            return await this.globalStorageClient.saveObject<EARDataSubmissionItem[]>(namespace, newSubmissionValues);
+            return await saveStatusChange(this.globalStorageClient, namespace, change, changedBy);
         }
     }
 
     async reopen(namespace: string, items: GLASSDataSubmissionItemIdentifier[]) {
-        const objects = await this.globalStorageClient.listObjectsInCollection<GLASSDataSubmissionItem>(namespace);
         const modules = await this.getModules();
 
-        const newSubmissionValues = await this.getNewSubmissionValues(items, objects, "NOT_COMPLETED");
+        const change = submissionChange(items, ["PENDING_APPROVAL"], "NOT_COMPLETED");
+        const changedBy = await this.getChangedBy();
+        await checkStatusChange(this.globalStorageClient, namespace, change, changedBy);
+
         const recipients = await this.getRecipientUsers(items, modules);
 
         const message = await this.getNotificationText(items, modules, "reopened");
@@ -1227,14 +1241,16 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
 
         await this.postDataSetRegistration(items, modules, false);
 
-        return await this.globalStorageClient.saveObject<GLASSDataSubmissionItem[]>(namespace, newSubmissionValues);
+        return await saveStatusChange(this.globalStorageClient, namespace, change, changedBy);
     }
 
     async accept(namespace: string, items: GLASSDataSubmissionItemIdentifier[]) {
-        const objects = await this.globalStorageClient.listObjectsInCollection<GLASSDataSubmissionItem>(namespace);
         const modules = await this.getModules();
 
-        const newSubmissionValues = await this.getNewSubmissionValues(items, objects, "UPDATE_REQUEST_ACCEPTED");
+        const change = submissionChange(items, ["PENDING_UPDATE_APPROVAL"], "UPDATE_REQUEST_ACCEPTED");
+        const changedBy = await this.getChangedBy();
+        await checkStatusChange(this.globalStorageClient, namespace, change, changedBy);
+
         const recipients = await this.getRecipientUsers(items, modules);
 
         const message = await this.getNotificationText(items, modules, "update request accepted");
@@ -1242,7 +1258,7 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
 
         await this.postDataSetRegistration(items, modules, false);
 
-        return await this.globalStorageClient.saveObject<GLASSDataSubmissionItem[]>(namespace, newSubmissionValues);
+        return await saveStatusChange(this.globalStorageClient, namespace, change, changedBy);
     }
 
     async getGLASSDashboardId(): Promise<string> {
@@ -1325,58 +1341,18 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
         const { id, username } = await this.api.get<StatusChangedBy>("/me?fields=id,username").getData();
         return { id, username };
     }
+}
 
-    private async getNewSubmissionValues(
-        items: GLASSDataSubmissionItemIdentifier[],
-        objects: GLASSDataSubmissionItem[],
-        status: Status
-    ) {
-        const changedBy = await this.getChangedBy();
+function submissionChange(
+    items: GLASSDataSubmissionItemIdentifier[],
+    from: Status[],
+    to: Status
+): StatusChange<GLASSDataSubmissionItem> {
+    return { selected: selectSubmissions(items), from, to };
+}
 
-        return objects.map(object => {
-            const isNewItem = !!items.find(
-                item =>
-                    item.orgUnit === object.orgUnit &&
-                    item.module === object.module &&
-                    item.period === String(object.period)
-            );
-
-            const statusHistory = {
-                changedAt: new Date().toISOString(),
-                from: object.status,
-                to: status,
-                changedBy,
-            };
-
-            return isNewItem ? { ...object, status, statusHistory: [...object.statusHistory, statusHistory] } : object;
-        });
-    }
-
-    private async getNewEARSubmissionValues(
-        signals: EARSubmissionItemIdentifier[],
-        objects: EARDataSubmissionItem[],
-        status: Status
-    ) {
-        const changedBy = await this.getChangedBy();
-
-        return objects.map(object => {
-            const isNewItem = !!signals.find(
-                signal =>
-                    signal.orgUnitId === object.orgUnit.id && signal.module === object.module && signal.id === object.id
-            );
-
-            const statusHistory = {
-                changedAt: new Date().toISOString(),
-                from: object.status,
-                to: status,
-                changedBy,
-            };
-
-            return isNewItem
-                ? { ...object, status: status, statusHistory: [...object.statusHistory, statusHistory] }
-                : object;
-        });
-    }
+function signalChange(signals: EARSubmissionItemIdentifier[], to: Status): StatusChange<EARDataSubmissionItem> {
+    return { selected: selectSignals(signals), from: ["PENDING_APPROVAL"], to };
 }
 
 const emptyPage: PaginatedObjects<GLASSDataSubmissionItem> = {

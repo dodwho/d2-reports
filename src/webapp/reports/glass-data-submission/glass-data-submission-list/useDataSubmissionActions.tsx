@@ -6,6 +6,7 @@ import {
     parseEARSubmissionItemId,
     UpdateAction,
 } from "../../../../domain/reports/glass-data-submission/entities/GLASSDataSubmissionItem";
+import { StatusConflictError } from "../../../../domain/reports/glass-data-submission/entities/StatusChange";
 import _ from "lodash";
 import i18n from "../../../../locales";
 import { useAppContext } from "../../../contexts/app-context";
@@ -80,7 +81,10 @@ export function useDataSubmissionActions(isDatasetUpdate: boolean, reload: () =>
                 console.debug(error);
                 setSnackbarMessage({
                     type: "error",
-                    message: i18n.t("Error when trying to {{action}} submission", { action: action }),
+                    message: errorMessage(
+                        error,
+                        i18n.t("Error when trying to {{action}} submission", { action: action })
+                    ),
                 });
             } finally {
                 setLoading(false);
@@ -107,7 +111,10 @@ export function useDataSubmissionActions(isDatasetUpdate: boolean, reload: () =>
                     });
             } catch (error) {
                 console.debug(error);
-                setSnackbarMessage({ type: "error", message: i18n.t("Error when trying to approve signal") });
+                setSnackbarMessage({
+                    type: "error",
+                    message: errorMessage(error, i18n.t("Error when trying to approve signal")),
+                });
             } finally {
                 setLoading(false);
                 reload();
@@ -129,7 +136,10 @@ export function useDataSubmissionActions(isDatasetUpdate: boolean, reload: () =>
                 );
         } catch (error) {
             console.debug(error);
-            setSnackbarMessage({ type: "error", message: i18n.t("Error when trying to reject submission") });
+            setSnackbarMessage({
+                type: "error",
+                message: errorMessage(error, i18n.t("Error when trying to reject submission")),
+            });
         } finally {
             setLoading(false);
             closeRejectionDialog();
@@ -154,7 +164,10 @@ export function useDataSubmissionActions(isDatasetUpdate: boolean, reload: () =>
                 );
         } catch (error) {
             console.debug(error);
-            setSnackbarMessage({ type: "error", message: i18n.t("Error when trying to reject signal") });
+            setSnackbarMessage({
+                type: "error",
+                message: errorMessage(error, i18n.t("Error when trying to reject signal")),
+            });
         } finally {
             setLoading(false);
             closeRejectionDialog();
@@ -178,6 +191,11 @@ export function useDataSubmissionActions(isDatasetUpdate: boolean, reload: () =>
         rejectEARSignal,
         updateDataSubmissionStatus,
     };
+}
+
+/** A status conflict explains itself (reload the page); any other error keeps the generic text. */
+function errorMessage(error: unknown, fallback: string): string {
+    return error instanceof StatusConflictError ? error.message : fallback;
 }
 
 const actionsPastMap: { [key: string]: string } = {
