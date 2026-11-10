@@ -88,6 +88,7 @@
         "post-metadata": "npx ts-node -P tsconfig-cli.json src/scripts/post-metadata.ts",
         "build-mal-metadata": "npx ts-node -P tsconfig-cli.json src/scripts/build-mal-metadata.ts",
         "glass-enrolment-smoke-test": "npx ts-node -P tsconfig-cli.json src/scripts/glass-enrolment-smoke-test.ts",
+        "glass-submissions-program-smoke-test": "npx ts-node -P tsconfig-cli.json src/scripts/glass-submissions-program-smoke-test.ts",
         "build-file-metadata": "npx ts-node -P tsconfig-cli.json src/scripts/build-file-metadata.ts",
         "test": "jest --passWithNoTests",
         "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
