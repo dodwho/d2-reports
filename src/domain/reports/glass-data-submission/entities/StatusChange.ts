@@ -9,6 +9,9 @@ import {
 
 export type StatusEntry = Pick<GLASSDataSubmissionItem, "id" | "status" | "statusHistory">;
 
+/** What a status change needs of a stored submission, whichever store holds it. */
+export type SubmissionEntry = StatusEntry & Pick<GLASSDataSubmissionItem, "module" | "orgUnit" | "period">;
+
 export interface StatusChange<T extends StatusEntry> {
     /** One test per selected submission. Each must match a stored entry whose status is in `from`. */
     selected: Array<(entry: T) => boolean>;
@@ -25,9 +28,18 @@ export class StatusConflictError extends Error {
     }
 }
 
+/** Thrown when the store refuses the write itself (no write access to the WHO decision stage): nothing is written. */
+export class StatusRefusedError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "StatusRefusedError";
+        Object.setPrototypeOf(this, StatusRefusedError.prototype);
+    }
+}
+
 export function selectSubmissions(items: GLASSDataSubmissionItemIdentifier[]) {
     return items.map(
-        item => (entry: GLASSDataSubmissionItem) =>
+        item => (entry: SubmissionEntry) =>
             entry.orgUnit === item.orgUnit && entry.module === item.module && String(entry.period) === item.period
     );
 }

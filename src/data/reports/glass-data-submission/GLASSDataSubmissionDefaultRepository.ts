@@ -39,11 +39,10 @@ import {
 } from "@eyeseetea/d2-api/api/trackerTrackedEntities";
 import { getUploadStatusSortKey } from "./getUploadStatusSortKey";
 import { checkStatusChange, saveStatusChange } from "./statusChangeStorage";
-import {
-    selectSignals,
-    selectSubmissions,
-    StatusChange,
-} from "../../../domain/reports/glass-data-submission/entities/StatusChange";
+import { selectSignals, StatusChange } from "../../../domain/reports/glass-data-submission/entities/StatusChange";
+import { DataStoreSubmissionsStore, StoredSubmission, SubmissionChange, SubmissionsStore } from "./submissionsStore";
+import { ProgramSubmissionsStore } from "./programSubmissionsStore";
+import { submissionsStoreSetting } from "./submissionsStoreSetting";
 
 interface CompleteDataSetRegistrationsResponse {
     completeDataSetRegistrations: Registration[] | undefined;
@@ -105,14 +104,10 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
         if (!selectedModuleId) return emptyPage;
 
         const modules = await this.getModules();
-        const dataSubmissionsDatastore = await this.getDataSubmissionObjects(namespace);
+        const submissionsStore = await this.getSubmissionsStore(namespace);
+        const storedSubmissions = await submissionsStore.read(selectedModuleId);
 
-        const dataSubmissions = await this.getDataSubmissions(
-            dataSubmissionsDatastore,
-            modules,
-            selectedModuleId,
-            periods
-        );
+        const dataSubmissions = await this.getDataSubmissions(storedSubmissions, modules, selectedModuleId, periods);
         const filteredRows = this.getFilteredRows(dataSubmissions, options);
 
         if (sorting?.field === "uploadStatuses") {
@@ -133,12 +128,21 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
         };
     }
 
-    private async getDataSubmissionObjects(namespace: string) {
-        return (await this.globalStorageClient.getObject<GLASSDataSubmissionItem[]>(namespace)) ?? [];
+    /**
+     * The store of the submissions, as `dataSubmissionsStore` in `glass/general` says (missing means the DataStore). Read
+     * on every call, as the GLASS app does, so a tab opened before the switch does not go on writing to the old store.
+     * An unknown value is an error, never a silent default. Signals (EAR) stay in the DataStore.
+     */
+    private async getSubmissionsStore(namespace: string): Promise<SubmissionsStore> {
+        const general = await this.globalStorageClient.getObject<{ dataSubmissionsStore?: string }>("general");
+
+        return submissionsStoreSetting(general?.dataSubmissionsStore) === "program"
+            ? new ProgramSubmissionsStore(this.api)
+            : new DataStoreSubmissionsStore(this.globalStorageClient, namespace);
     }
 
     private async getDataSubmissions(
-        dataSubmissionsDatastore: GLASSDataSubmissionItem[],
+        dataSubmissionsDatastore: StoredSubmission[],
         modules: GLASSDataSubmissionModule[],
         selectedModuleId: Id,
         periods: string[]
@@ -894,9 +898,10 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
         const modules = await this.getModules();
 
         if (!_.isEmpty(items)) {
-            const change = submissionChange(items, ["PENDING_APPROVAL"], "APPROVED");
+            const change: SubmissionChange = { items, from: ["PENDING_APPROVAL"], to: "APPROVED" };
+            const store = await this.getSubmissionsStore(namespace);
             const changedBy = await this.getChangedBy();
-            await checkStatusChange(this.globalStorageClient, namespace, change, changedBy);
+            await store.check(change, changedBy);
 
             await this.approveByModule(modules, items);
             const recipients = await this.getRecipientUsers(items, modules);
@@ -904,7 +909,7 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
             const message = await this.getNotificationText(items, modules, "approved");
             this.sendNotifications(message, message, [], recipients);
 
-            return await saveStatusChange(this.globalStorageClient, namespace, change, changedBy);
+            return await store.save(change, changedBy);
         } else if (signals) {
             const change = signalChange(signals, "APPROVED");
             const changedBy = await this.getChangedBy();
@@ -1195,11 +1200,12 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
 
         if (!_.isEmpty(items)) {
             // Rejecting an update request puts the submission back to APPROVED; rejecting a submission rejects it.
-            const change = isDatasetUpdate
-                ? submissionChange(items, ["PENDING_UPDATE_APPROVAL"], "APPROVED")
-                : submissionChange(items, ["PENDING_APPROVAL"], "REJECTED");
+            const change: SubmissionChange = isDatasetUpdate
+                ? { items, from: ["PENDING_UPDATE_APPROVAL"], to: "APPROVED" }
+                : { items, from: ["PENDING_APPROVAL"], to: "REJECTED" };
+            const store = await this.getSubmissionsStore(namespace);
             const changedBy = await this.getChangedBy();
-            await checkStatusChange(this.globalStorageClient, namespace, change, changedBy);
+            await store.check(change, changedBy);
 
             const recipients = await this.getRecipientUsers(items, modules);
 
@@ -1209,7 +1215,7 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
 
             await this.postDataSetRegistration(items, modules, false);
 
-            return await saveStatusChange(this.globalStorageClient, namespace, change, changedBy);
+            return await store.save(change, changedBy);
         } else if (signals) {
             const change = signalChange(signals, "REJECTED");
             const changedBy = await this.getChangedBy();
@@ -1229,9 +1235,10 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
     async reopen(namespace: string, items: GLASSDataSubmissionItemIdentifier[]) {
         const modules = await this.getModules();
 
-        const change = submissionChange(items, ["PENDING_APPROVAL"], "NOT_COMPLETED");
+        const change: SubmissionChange = { items, from: ["PENDING_APPROVAL"], to: "NOT_COMPLETED" };
+        const store = await this.getSubmissionsStore(namespace);
         const changedBy = await this.getChangedBy();
-        await checkStatusChange(this.globalStorageClient, namespace, change, changedBy);
+        await store.check(change, changedBy);
 
         const recipients = await this.getRecipientUsers(items, modules);
 
@@ -1241,15 +1248,16 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
 
         await this.postDataSetRegistration(items, modules, false);
 
-        return await saveStatusChange(this.globalStorageClient, namespace, change, changedBy);
+        return await store.save(change, changedBy);
     }
 
     async accept(namespace: string, items: GLASSDataSubmissionItemIdentifier[]) {
         const modules = await this.getModules();
 
-        const change = submissionChange(items, ["PENDING_UPDATE_APPROVAL"], "UPDATE_REQUEST_ACCEPTED");
+        const change: SubmissionChange = { items, from: ["PENDING_UPDATE_APPROVAL"], to: "UPDATE_REQUEST_ACCEPTED" };
+        const store = await this.getSubmissionsStore(namespace);
         const changedBy = await this.getChangedBy();
-        await checkStatusChange(this.globalStorageClient, namespace, change, changedBy);
+        await store.check(change, changedBy);
 
         const recipients = await this.getRecipientUsers(items, modules);
 
@@ -1258,7 +1266,7 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
 
         await this.postDataSetRegistration(items, modules, false);
 
-        return await saveStatusChange(this.globalStorageClient, namespace, change, changedBy);
+        return await store.save(change, changedBy);
     }
 
     async getGLASSDashboardId(): Promise<string> {
@@ -1341,14 +1349,6 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
         const { id, username } = await this.api.get<StatusChangedBy>("/me?fields=id,username").getData();
         return { id, username };
     }
-}
-
-function submissionChange(
-    items: GLASSDataSubmissionItemIdentifier[],
-    from: Status[],
-    to: Status
-): StatusChange<GLASSDataSubmissionItem> {
-    return { selected: selectSubmissions(items), from, to };
 }
 
 function signalChange(signals: EARSubmissionItemIdentifier[], to: Status): StatusChange<EARDataSubmissionItem> {

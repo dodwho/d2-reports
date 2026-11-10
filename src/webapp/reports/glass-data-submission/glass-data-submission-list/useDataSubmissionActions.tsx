@@ -6,7 +6,10 @@ import {
     parseEARSubmissionItemId,
     UpdateAction,
 } from "../../../../domain/reports/glass-data-submission/entities/GLASSDataSubmissionItem";
-import { StatusConflictError } from "../../../../domain/reports/glass-data-submission/entities/StatusChange";
+import {
+    StatusConflictError,
+    StatusRefusedError,
+} from "../../../../domain/reports/glass-data-submission/entities/StatusChange";
 import _ from "lodash";
 import i18n from "../../../../locales";
 import { useAppContext } from "../../../contexts/app-context";
@@ -193,9 +196,9 @@ export function useDataSubmissionActions(isDatasetUpdate: boolean, reload: () =>
     };
 }
 
-/** A status conflict explains itself (reload the page); any other error keeps the generic text. */
+/** A status conflict or a refused write explains itself (reload the page, no write access); any other error keeps the generic text. */
 function errorMessage(error: unknown, fallback: string): string {
-    return error instanceof StatusConflictError ? error.message : fallback;
+    return error instanceof StatusConflictError || error instanceof StatusRefusedError ? error.message : fallback;
 }
 
 const actionsPastMap: { [key: string]: string } = {

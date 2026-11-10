@@ -22,7 +22,8 @@ export interface GLASSDataSubmissionItem {
     to: Date | null;
     statusHistory: {
         changedAt: string;
-        from: Status;
+        /** Missing on the first change of a submission. */
+        from?: Status;
         to: Status;
         changedBy?: StatusChangedBy;
     }[];
