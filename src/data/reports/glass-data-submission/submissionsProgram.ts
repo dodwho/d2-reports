@@ -73,12 +73,32 @@ function parseChangedBy(value: string): StatusChangedBy | undefined {
 type StoredEvent = {
     programStage?: string;
     occurredAt?: string;
+    status?: string;
     dataValues?: { dataElement?: string; value?: string }[];
 };
 
-/** The status history stored in a submission's events, oldest first (DHIS2 keeps no other order). */
+/**
+ * Why a submission's events cannot be read as a history (an event of another stage, or without a valid date, e.g.
+ * made by hand in Capture), or undefined. Checked before `historyFromEvents`, which would throw on such dates.
+ */
+function problemInEvents(events: StoredEvent[]): string | undefined {
+    const bad = events.find(
+        event =>
+            (event.programStage !== ids.countryStage && event.programStage !== ids.whoStage) ||
+            Number.isNaN(Date.parse((event.occurredAt ?? "").slice(0, 23) + "Z"))
+    );
+    return bad
+        ? `an event of stage ${bad.programStage ?? "(none)"} dated "${bad.occurredAt ?? ""}" cannot be read`
+        : undefined;
+}
+
+/**
+ * The status history stored in a submission's events, oldest first (DHIS2 keeps no other order). Only COMPLETED
+ * events are changes: every change is written COMPLETED, so a scheduled or open event is not one.
+ */
 function historyFromEvents(events: StoredEvent[]): StatusHistory {
     return _(events)
+        .filter(event => event.status === "COMPLETED")
         .map(event => {
             const value = (dataElement: string) =>
                 event.dataValues?.find(dataValue => dataValue.dataElement === dataElement)?.value;
@@ -111,6 +131,8 @@ export function parseEntity(entity: StoredEntity): { submission?: ProgramSubmiss
     const key = entity.attributes?.find(attribute => attribute.attribute === ids.keyAttribute)?.value;
     const keyParts = key ? parseSubmissionKey(key) : undefined;
     const enrollment = entity.enrollments?.find(enrollment => enrollment.program === ids.program);
+    const eventProblem = problemInEvents(enrollment?.events ?? []);
+    if (eventProblem) return { problem: `Data submission ${entity.trackedEntity ?? "(no id)"}: ${eventProblem}` };
     const statusHistory = historyFromEvents(enrollment?.events ?? []);
     const status = _.last(statusHistory)?.to;
 

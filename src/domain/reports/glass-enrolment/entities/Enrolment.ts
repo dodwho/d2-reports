@@ -222,10 +222,15 @@ export type GlassModule = {
  * enough — for AMC they include the data capture group, whose members are country data entry staff.
  */
 export function administeredModules(modules: GlassModule[], userGroupIds: Set<Id>): GlassModule[] {
-    return modules.filter(module =>
-        _.flatten(_.compact(Object.values(module.userGroups))).some(
-            group => group.name.trim().toLowerCase().endsWith(" admin") && userGroupIds.has(group.id)
-        )
+    return modules.filter(module => moduleAdminGroups([module]).some(group => userGroupIds.has(group.id)));
+}
+
+/** The admin groups of the given modules (see `administeredModules`), each once. */
+export function moduleAdminGroups(modules: GlassModule[]): { id: Id; name: string }[] {
+    const groups = _.flatMap(modules, module => _.flatten(_.compact(Object.values(module.userGroups))));
+    return _.uniqBy(
+        groups.filter(group => group.name.trim().toLowerCase().endsWith(" admin")),
+        group => group.id
     );
 }
 

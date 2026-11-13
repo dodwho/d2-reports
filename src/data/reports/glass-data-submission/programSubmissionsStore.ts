@@ -27,7 +27,7 @@ const fields = {
     enrollments: {
         enrollment: true,
         program: true,
-        events: { programStage: true, occurredAt: true, dataValues: { dataElement: true, value: true } },
+        events: { programStage: true, occurredAt: true, status: true, dataValues: { dataElement: true, value: true } },
     },
 } as const;
 
@@ -53,7 +53,7 @@ export class ProgramSubmissionsStore implements SubmissionsStore {
 
     async check(change: SubmissionChange, changedBy: StatusChangedBy): Promise<void> {
         await this.assertCanWriteWhoStage();
-        await this.plan(change, changedBy);
+        await this.assertInCaptureScope(await this.plan(change, changedBy));
     }
 
     async save(change: SubmissionChange, changedBy: StatusChangedBy): Promise<void> {
@@ -67,7 +67,9 @@ export class ProgramSubmissionsStore implements SubmissionsStore {
             if (report.status === "ERROR") throw new Error(report.message);
         } catch (error) {
             const reason = refusalMessage(error) ?? (error as Error)?.message;
-            throw new StatusRefusedError(`Error saving the status change, nothing was changed: ${reason}`);
+            throw new StatusRefusedError(
+                `Error saving the status change: the status was not changed and no email was sent, but data copies or registrations made for it may already have run: ${reason}`
+            );
         }
     }
 
@@ -129,5 +131,48 @@ export class ProgramSubmissionsStore implements SubmissionsStore {
             throw new StatusRefusedError(
                 "You do not have write access to the WHO decision stage of the submissions program, so the status cannot be changed. Nothing was changed."
             );
+    }
+
+    /**
+     * The read reaches the countries of the user's search scope, but DHIS2 writes an event only in the capture scope, so
+     * a country outside it is refused here, before any side effect, rather than at the save. A superuser (`ALL`) is not.
+     */
+    private async assertInCaptureScope(submissions: ProgramSubmission[]): Promise<void> {
+        const orgUnitIds = _.uniq(submissions.map(submission => submission.orgUnit));
+        if (orgUnitIds.length === 0) return;
+
+        const me = await this.api
+            .get<{ authorities: string[]; organisationUnits: { id: Id }[] }>("/me", {
+                fields: "authorities,organisationUnits[id]",
+            })
+            .getData();
+        if (me.authorities.includes("ALL")) return;
+
+        const captureIds = new Set(me.organisationUnits.map(orgUnit => orgUnit.id));
+        const orgUnits = _.flatten(
+            await Promise.all(
+                _.chunk(orgUnitIds, KEYS_PER_QUERY).map(async chunk => {
+                    const response = await this.api
+                        .get<{ organisationUnits: { id: Id; name: string; path: string }[] }>("/organisationUnits", {
+                            filter: `id:in:[${chunk.join(",")}]`,
+                            fields: "id,name,path",
+                            paging: false,
+                        })
+                        .getData();
+                    return response.organisationUnits;
+                })
+            )
+        );
+        const outside = orgUnitIds.filter(id => {
+            const orgUnit = orgUnits.find(candidate => candidate.id === id);
+            return !orgUnit?.path.split("/").some(pathId => captureIds.has(pathId));
+        });
+
+        if (outside.length > 0) {
+            const names = outside.map(id => orgUnits.find(orgUnit => orgUnit.id === id)?.name ?? id);
+            throw new StatusRefusedError(
+                `You cannot change the status for ${names.join(", ")}: not in the organisation units you can enter data for. Nothing was changed.`
+            );
+        }
     }
 }

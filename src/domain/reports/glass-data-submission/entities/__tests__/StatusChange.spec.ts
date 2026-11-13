@@ -40,6 +40,21 @@ describe("planStatusChange", () => {
         expect(result[1]).toBe(entries[1]);
     });
 
+    it("stamps the change after the latest stored change when this browser's clock is behind", () => {
+        const stored = entry("a", "FRA", "PENDING_APPROVAL", 1);
+        const later = {
+            ...stored,
+            statusHistory: stored.statusHistory.map(item => ({ ...item, changedAt: "2026-11-09T12:03:00.000Z" })),
+        };
+
+        const result = planStatusChange([later], approve("FRA"), changedBy, now);
+
+        expect(result[0]?.statusHistory[1]?.changedAt).toBe("2026-11-09T12:03:00.001Z");
+        expect(planStatusChange([stored], approve("FRA"), changedBy, now)[0]?.statusHistory[1]?.changedAt).toBe(
+            now.toISOString()
+        );
+    });
+
     it("refuses when the stored status is no longer the expected one, and changes nothing", () => {
         const entries = [entry("a", "FRA", "REJECTED"), entry("b", "DEU", "PENDING_APPROVAL")];
 

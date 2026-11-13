@@ -20,6 +20,7 @@ function entity(id: string, key: string | undefined, statuses: string[]): Stored
                 events: statuses.map((status, index) => ({
                     programStage: ids.countryStage,
                     occurredAt: `2026-03-01T${String(10 + index).padStart(2, "0")}:00:00.000`,
+                    status: "COMPLETED",
                     dataValues: [{ dataElement: ids.countryStatus, value: status }],
                 })),
             },
@@ -33,8 +34,20 @@ const approve = (...orgUnits: string[]): SubmissionChange => ({
     to: "APPROVED",
 });
 
+interface FakeUser {
+    authorities: string[];
+    /** Capture org units of the user. */
+    organisationUnits: { id: string }[];
+}
+
+/** Captures at WHO; every org unit sits at `/WHO/EURO/<id>` unless named in `paths`. */
+const defaultUser: FakeUser = { authorities: [], organisationUnits: [{ id: "WHO" }] };
+
 /** A tracker that answers the queries of the store as DHIS2 does (`sw` and `in` filters, pages) and records the posts. */
-function fakeTracker(entities: StoredEntity[], options: { canWrite?: boolean; postError?: unknown } = {}) {
+function fakeTracker(
+    entities: StoredEntity[],
+    options: { canWrite?: boolean; postError?: unknown; user?: FakeUser; paths?: Record<string, string> } = {}
+) {
     const state = {
         queries: [] as { filter: string; page: number; ouMode: string }[],
         posts: [] as { params: any; body: any }[],
@@ -69,8 +82,19 @@ function fakeTracker(entities: StoredEntity[], options: { canWrite?: boolean; po
                 },
             }),
         },
-        get: () => ({
+        get: (path: string, params: { filter?: string }) => ({
             getData: async () => {
+                if (path === "/me") return options.user ?? defaultUser;
+                if (path === "/organisationUnits") {
+                    const requested = (params.filter ?? "").replace(/^id:in:\[|\]$/g, "").split(",");
+                    return {
+                        organisationUnits: requested.map(id => ({
+                            id,
+                            name: `Name of ${id}`,
+                            path: options.paths?.[id] ?? `/WHO/EURO/${id}`,
+                        })),
+                    };
+                }
                 state.stageReads += 1;
                 return { access: { data: { write: options.canWrite ?? true } } };
             },
@@ -140,6 +164,34 @@ describe("ProgramSubmissionsStore.check", () => {
 
         expect(state.queries.map(query => query.filter.split(":in:")[1]?.split(";").length)).toEqual([100, 50]);
     });
+
+    it("refuses and names a country outside the user's capture org units, without writing", async () => {
+        const { store, state } = fakeTracker(
+            [entity("a", "m|FRA|2025", ["PENDING_APPROVAL"]), entity("b", "m|KEN|2025", ["PENDING_APPROVAL"])],
+            { user: { authorities: [], organisationUnits: [{ id: "EURO" }] }, paths: { KEN: "/WHO/AFRO/KEN" } }
+        );
+
+        await expect(store.check(approve("FRA", "KEN"), changedBy)).rejects.toThrow(
+            /You cannot change the status for Name of KEN: .* Nothing was changed/
+        );
+        expect(state.posts).toEqual([]);
+    });
+
+    it("lets a superuser (ALL) through whatever the capture org units", async () => {
+        const { store } = fakeTracker([entity("b", "m|KEN|2025", ["PENDING_APPROVAL"])], {
+            user: { authorities: ["ALL"], organisationUnits: [] },
+        });
+
+        await expect(store.check(approve("KEN"), changedBy)).resolves.toBeUndefined();
+    });
+
+    it("accepts a country below one of the user's capture org units", async () => {
+        const { store } = fakeTracker([entity("a", "m|FRA|2025", ["PENDING_APPROVAL"])], {
+            user: { authorities: [], organisationUnits: [{ id: "EURO" }] },
+        });
+
+        await expect(store.check(approve("FRA"), changedBy)).resolves.toBeUndefined();
+    });
 });
 
 describe("ProgramSubmissionsStore.save", () => {
@@ -203,7 +255,7 @@ describe("ProgramSubmissionsStore.save", () => {
         const { store } = fakeTracker([entity("fra", "m|FRA|2025", ["PENDING_APPROVAL"])], { postError: refusal });
 
         await expect(store.save(approve("FRA"), changedBy)).rejects.toThrow(
-            /nothing was changed: E1095 no write access/
+            /the status was not changed.*E1095 no write access/
         );
     });
 });

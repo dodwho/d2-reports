@@ -92,14 +92,18 @@ export const ContactDialog: React.FC<ContactDialogProps> = props => {
         const [action, changes] = planned;
 
         setIsSaving(true);
-        const result = await apply(action, changes);
-        setIsSaving(false);
-
-        if (!hasProblems(result)) {
-            snackbar.success(i18n.t("Focal point saved"));
-            props.onClose();
-        } else {
-            snackbar.error(problemsOf(result, countryNames).join("; "));
+        try {
+            const result = await apply(action, changes);
+            if (!hasProblems(result)) {
+                snackbar.success(i18n.t("Focal point saved"));
+                props.onClose();
+            } else {
+                snackbar.error(problemsOf(result, countryNames).join("; "));
+            }
+        } catch (error) {
+            snackbar.error((error as Error).message);
+        } finally {
+            setIsSaving(false);
         }
     };
 

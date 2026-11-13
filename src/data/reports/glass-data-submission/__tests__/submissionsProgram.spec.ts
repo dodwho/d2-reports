@@ -10,7 +10,7 @@ import {
 
 const key = "amcModule|FRA|2025";
 
-type EventSpec = { stage: "country" | "who"; to: string; at: string; from?: string; by?: string };
+type EventSpec = { stage: "country" | "who"; to: string; at: string; from?: string; by?: string; status?: string };
 
 function entity(id: string, events: EventSpec[], entityKey: string | null = key): StoredEntity {
     return {
@@ -23,6 +23,7 @@ function entity(id: string, events: EventSpec[], entityKey: string | null = key)
                 events: events.map(event => ({
                     programStage: event.stage === "who" ? ids.whoStage : ids.countryStage,
                     occurredAt: event.at,
+                    status: event.status ?? "COMPLETED",
                     dataValues: [
                         { dataElement: event.stage === "who" ? ids.whoDecision : ids.countryStatus, value: event.to },
                         ...(event.from ? [{ dataElement: ids.previousStatus, value: event.from }] : []),
@@ -163,5 +164,27 @@ describe("toWhoEvent", () => {
         });
 
         expect(submission?.statusHistory).toEqual([decided.statusHistory[1]]);
+    });
+});
+
+describe("parseEntity on events not written by the apps", () => {
+    const at = "2026-03-02T10:00:00.123";
+
+    it("names an event without a valid date instead of throwing", () => {
+        const { submission, problem } = parseEntity(
+            entity("sub9", [{ stage: "country", to: "NOT_COMPLETED", at: "" }])
+        );
+        expect(submission).toBeUndefined();
+        expect(problem).toContain("cannot be read");
+    });
+
+    it("does not count a scheduled event as a status change", () => {
+        const { submission } = parseEntity(
+            entity("sub9", [
+                { stage: "country", to: "NOT_COMPLETED", at },
+                { stage: "country", to: "COMPLETE", at: "2026-03-03T10:00:00.000", status: "SCHEDULE" },
+            ])
+        );
+        expect(submission?.status).toBe("NOT_COMPLETED");
     });
 });

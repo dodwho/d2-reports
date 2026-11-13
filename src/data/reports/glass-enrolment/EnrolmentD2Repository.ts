@@ -12,6 +12,7 @@ import {
     EnrolmentStatus,
     GlassModule,
     hasDetails,
+    moduleAdminGroups,
 } from "../../../domain/reports/glass-enrolment/entities/Enrolment";
 import { HistoryRecord } from "../../../domain/reports/glass-enrolment/entities/History";
 import {
@@ -20,6 +21,7 @@ import {
     WriteResult,
 } from "../../../domain/reports/glass-enrolment/repositories/EnrolmentRepository";
 import { Namespaces, glassDataStoreNamespace } from "../../common/clients/storage/Namespaces";
+import { setDataStoreSharing } from "../../common/clients/storage/dataStoreSharing";
 import {
     DEFAULT_ENROLMENT_PROGRAM_ID,
     ENROLMENT_MODULE_ATTRIBUTE_ID,
@@ -317,6 +319,8 @@ export class EnrolmentD2Repository implements EnrolmentRepository {
      * Applies a change set as up to five tracker imports: new tracked entities, enrolment status
      * updates, then contact creations, updates and deletions. A dry run sends the same imports in
      * VALIDATE mode, so the preview is DHIS2's verdict and nothing is persisted.
+     * A real run stops at the first import with errors: a replace whose new contact was refused must
+     * not go on to delete the outgoing one and leave the country without a focal point.
      */
     async apply(changes: ChangeSet, dryRun: boolean): Promise<WriteResult> {
         const program = await this.getProgramInfo();
@@ -324,43 +328,55 @@ export class EnrolmentD2Repository implements EnrolmentRepository {
         const [creations, statusUpdates] = _.partition(changes.statusChanges, change => change.from === "NONE");
         const contactsByKind = _.groupBy(changes.contactChanges, contactChangeKind);
 
-        const results = [
-            await this.post(
-                "CREATE",
-                "TRACKED_ENTITY",
-                creations.map(change => toTrackedEntity(change, program)),
-                chunk => ({ trackedEntities: chunk }),
-                dryRun
-            ),
-            await this.post(
-                "UPDATE",
-                "ENROLLMENT",
-                statusUpdates.map(change => toEnrollment(change, program)),
-                chunk => ({ enrollments: chunk }),
-                dryRun
-            ),
-            await this.post(
-                "CREATE",
-                "EVENT",
-                (contactsByKind["create"] ?? []).map(change => toEvent(change, program)),
-                chunk => ({ events: chunk }),
-                dryRun
-            ),
-            await this.post(
-                "UPDATE",
-                "EVENT",
-                (contactsByKind["update"] ?? []).map(change => toEvent(change, program)),
-                chunk => ({ events: chunk }),
-                dryRun
-            ),
-            await this.post(
-                "DELETE",
-                "EVENT",
-                (contactsByKind["delete"] ?? []).map(change => ({ event: change.eventId })),
-                chunk => ({ events: chunk }),
-                dryRun
-            ),
+        const phases = [
+            () =>
+                this.post(
+                    "CREATE",
+                    "TRACKED_ENTITY",
+                    creations.map(change => toTrackedEntity(change, program)),
+                    chunk => ({ trackedEntities: chunk }),
+                    dryRun
+                ),
+            () =>
+                this.post(
+                    "UPDATE",
+                    "ENROLLMENT",
+                    statusUpdates.map(change => toEnrollment(change, program)),
+                    chunk => ({ enrollments: chunk }),
+                    dryRun
+                ),
+            () =>
+                this.post(
+                    "CREATE",
+                    "EVENT",
+                    (contactsByKind["create"] ?? []).map(change => toEvent(change, program)),
+                    chunk => ({ events: chunk }),
+                    dryRun
+                ),
+            () =>
+                this.post(
+                    "UPDATE",
+                    "EVENT",
+                    (contactsByKind["update"] ?? []).map(change => toEvent(change, program)),
+                    chunk => ({ events: chunk }),
+                    dryRun
+                ),
+            () =>
+                this.post(
+                    "DELETE",
+                    "EVENT",
+                    (contactsByKind["delete"] ?? []).map(change => ({ event: change.eventId })),
+                    chunk => ({ events: chunk }),
+                    dryRun
+                ),
         ];
+
+        const results: WriteResult[] = [];
+        for (const phase of phases) {
+            const result = await phase();
+            results.push(result);
+            if (!dryRun && result.errors.length > 0) break;
+        }
 
         return {
             affected: _.sumBy(results, result => result.affected),
@@ -459,8 +475,23 @@ export class EnrolmentD2Repository implements EnrolmentRepository {
         return records;
     }
 
+    /**
+     * A new DataStore key gets the instance default sharing (on the WHO instance, every account can
+     * read and overwrite it), and these records hold focal-point contacts. So each key is closed to
+     * the public and readable by the module admin groups; the saving admin keeps write as its owner.
+     * If the sharing does not stick, this throws and the change is not applied.
+     */
     async saveHistory(record: HistoryRecord): Promise<void> {
         await this.api.dataStore(HISTORY_NAMESPACE).save(record.id, record).getData();
+        const adminGroups = moduleAdminGroups(await this.getModules());
+        if (_.isEmpty(adminGroups)) throw new Error("No module admin group found to share the history record with");
+
+        await setDataStoreSharing(this.api, HISTORY_NAMESPACE, record.id, {
+            publicAccess: "--------",
+            externalAccess: false,
+            userAccesses: [],
+            userGroupAccesses: adminGroups.map(group => ({ id: group.id, access: "r-------" })),
+        });
     }
 }
 

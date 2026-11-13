@@ -24,12 +24,27 @@ export async function copyDataStoreSharing(
     toKey: string
 ): Promise<void> {
     const sharing = await getSharing(api, await getEntryId(api, namespace, fromKey));
-    const toId = await getEntryId(api, namespace, toKey);
-    await api.put("/sharing", { type: "dataStore", id: toId }, { object: sharing }).getData();
+    await setDataStoreSharing(api, namespace, toKey, sharing);
+}
 
-    const saved = await getSharing(api, toId);
-    if (!_.isEqual(saved, sharing)) {
-        throw new Error(`The sharing of ${namespace}/${toKey} was not saved like ${namespace}/${fromKey}`);
+/** Sets a DataStore key's sharing, then reads it back; throws if the server did not keep it. */
+export async function setDataStoreSharing(
+    api: SharingApi,
+    namespace: string,
+    key: string,
+    sharing: DataStoreSharing
+): Promise<void> {
+    const id = await getEntryId(api, namespace, key);
+    const wanted = {
+        ...sharing,
+        userAccesses: toAccesses(sharing.userAccesses),
+        userGroupAccesses: toAccesses(sharing.userGroupAccesses),
+    };
+    await api.put("/sharing", { type: "dataStore", id }, { object: wanted }).getData();
+
+    const saved = await getSharing(api, id);
+    if (!_.isEqual(saved, wanted)) {
+        throw new Error(`The sharing of ${namespace}/${key} was not saved`);
     }
 }
 

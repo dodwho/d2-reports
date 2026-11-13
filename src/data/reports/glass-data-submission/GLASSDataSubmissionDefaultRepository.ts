@@ -907,9 +907,11 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
             const recipients = await this.getRecipientUsers(items, modules);
 
             const message = await this.getNotificationText(items, modules, "approved");
-            this.sendNotifications(message, message, [], recipients);
 
-            return await store.save(change, changedBy);
+            // Emails only once the status is saved: a refused save must not have told anyone (review E3).
+            const result = await store.save(change, changedBy);
+            this.sendNotifications(message, message, [], recipients);
+            return result;
         } else if (signals) {
             const change = signalChange(signals, "APPROVED");
             const changedBy = await this.getChangedBy();
@@ -918,9 +920,11 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
             const recipients = await this.getEARRecipientUsers(signals, modules);
 
             const message = this.getEARNotificationText(signals, modules, "approved");
-            this.sendNotifications(message, message, [], recipients);
 
-            return await saveStatusChange(this.globalStorageClient, namespace, change, changedBy);
+            // Emails only once the status is saved: a refused save must not have told anyone (review E3).
+            const result = await saveStatusChange(this.globalStorageClient, namespace, change, changedBy);
+            this.sendNotifications(message, message, [], recipients);
+            return result;
         }
     }
 
@@ -1211,11 +1215,12 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
 
             const body = `Please review the messages and the reports to find about the causes of this rejection. You have to upload new datasets.\n Reason for rejection:\n ${message}`;
 
-            this.sendNotifications("Rejected by WHO", body, [], recipients);
-
             await this.postDataSetRegistration(items, modules, false);
 
-            return await store.save(change, changedBy);
+            // Emails only once the status is saved: a refused save must not have told anyone (review E3).
+            const result = await store.save(change, changedBy);
+            this.sendNotifications("Rejected by WHO", body, [], recipients);
+            return result;
         } else if (signals) {
             const change = signalChange(signals, "REJECTED");
             const changedBy = await this.getChangedBy();
@@ -1226,9 +1231,10 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
             const notificationText = this.getEARNotificationText(signals, modules, "rejected");
             const body = `${notificationText} with the following message:\n${message}`;
 
+            // Emails only once the status is saved: a refused save must not have told anyone (review E3).
+            const result = await saveStatusChange(this.globalStorageClient, namespace, change, changedBy);
             this.sendNotifications(notificationText, body, [], recipients);
-
-            return await saveStatusChange(this.globalStorageClient, namespace, change, changedBy);
+            return result;
         }
     }
 
@@ -1244,11 +1250,12 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
 
         const message = await this.getNotificationText(items, modules, "reopened");
 
-        this.sendNotifications(message, message, [], recipients);
-
         await this.postDataSetRegistration(items, modules, false);
 
-        return await store.save(change, changedBy);
+        // Emails only once the status is saved: a refused save must not have told anyone (review E3).
+        const result = await store.save(change, changedBy);
+        this.sendNotifications(message, message, [], recipients);
+        return result;
     }
 
     async accept(namespace: string, items: GLASSDataSubmissionItemIdentifier[]) {
@@ -1262,11 +1269,13 @@ export class GLASSDataSubmissionDefaultRepository implements GLASSDataSubmission
         const recipients = await this.getRecipientUsers(items, modules);
 
         const message = await this.getNotificationText(items, modules, "update request accepted");
-        this.sendNotifications(message, message, [], recipients);
 
         await this.postDataSetRegistration(items, modules, false);
 
-        return await store.save(change, changedBy);
+        // Emails only once the status is saved: a refused save must not have told anyone (review E3).
+        const result = await store.save(change, changedBy);
+        this.sendNotifications(message, message, [], recipients);
+        return result;
     }
 
     async getGLASSDashboardId(): Promise<string> {

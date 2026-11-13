@@ -1,4 +1,4 @@
-import { copyDataStoreSharing, DataStoreSharing, SharingApi } from "../dataStoreSharing";
+import { copyDataStoreSharing, DataStoreSharing, setDataStoreSharing, SharingApi } from "../dataStoreSharing";
 
 const locked: DataStoreSharing = {
     publicAccess: "r-------",
@@ -66,7 +66,21 @@ describe("copyDataStoreSharing", () => {
         const { api } = fakeApi({ idATCs: locked, idNew: open }, true);
 
         await expect(copyDataStoreSharing(api, "glass", "ATCs", "ATC-2026-v2")).rejects.toThrow(
-            "The sharing of glass/ATC-2026-v2 was not saved like glass/ATCs"
+            "The sharing of glass/ATC-2026-v2 was not saved"
+        );
+    });
+});
+
+describe("setDataStoreSharing", () => {
+    it("closes a new key to the public and fails if the server keeps the old sharing", async () => {
+        const closed: DataStoreSharing = { ...locked, publicAccess: "--------" };
+        const { api, sharingById } = fakeApi({ idNew: open });
+        await setDataStoreSharing(api, "glass", "ATC-2026-v2", closed);
+        expect(sharingById["idNew"]).toEqual(closed);
+
+        const ignored = fakeApi({ idNew: open }, true);
+        await expect(setDataStoreSharing(ignored.api, "glass", "ATC-2026-v2", closed)).rejects.toThrow(
+            "The sharing of glass/ATC-2026-v2 was not saved"
         );
     });
 });

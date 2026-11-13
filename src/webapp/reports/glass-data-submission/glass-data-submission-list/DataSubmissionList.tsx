@@ -154,12 +154,14 @@ export const DataSubmissionList: React.FC = React.memo(() => {
                     icon: <ThumbDown />,
                     multiple: true,
                     onClick: openDataSubmissionRejectionDialog,
+                    // One status for the whole selection: a reject is either of a submission or of an update
+                    // request, and a mixed selection failed at save with a "please reload" that never helped.
                     isActive: (rows: DataSubmissionViewModel[]) => {
-                        return _.every(rows, row => {
-                            setDatasetUpdate(row.status === "PENDING_UPDATE_APPROVAL");
-
-                            return row.status === "PENDING_APPROVAL" || row.status === "PENDING_UPDATE_APPROVAL";
-                        });
+                        const statuses = _.uniq(rows.map(row => row.status));
+                        const status = statuses.length === 1 ? statuses[0] : undefined;
+                        if (status !== "PENDING_APPROVAL" && status !== "PENDING_UPDATE_APPROVAL") return false;
+                        setDatasetUpdate(status === "PENDING_UPDATE_APPROVAL");
+                        return true;
                     },
                 },
                 {

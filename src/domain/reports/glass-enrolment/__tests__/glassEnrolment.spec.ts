@@ -5,6 +5,7 @@ import {
     EnrolmentStatus,
     GlassModule,
     administeredModules,
+    moduleAdminGroups,
     buildCells,
     hasDetails,
     contactsShownFor,
@@ -351,6 +352,10 @@ describe("administeredModules", () => {
 
     it("does not treat data capture staff as administrators, though they can approve", () => {
         expect(administeredModules([amc], new Set(["g-cap", "g-vis"]))).toEqual([]);
+    });
+
+    it("lists each admin group once, for the history record sharing", () => {
+        expect(moduleAdminGroups([amc, amc])).toEqual([group("g-admin", "AMR-AMC admin")]);
     });
 });
 

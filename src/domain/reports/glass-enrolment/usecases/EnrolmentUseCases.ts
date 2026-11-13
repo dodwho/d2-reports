@@ -89,9 +89,14 @@ export class ApplyChangeUseCase implements UseCase {
 
         await this.repository.saveHistory(record);
 
-        const result = _.isEmpty(record.assignedCountryIds)
-            ? await this.repository.apply(request.changes, false)
-            : await this.repository.assignToProgram(record.assignedCountryIds);
+        // A write that throws must not leave the record "pending" for ever (review E6).
+        const result = await (_.isEmpty(record.assignedCountryIds)
+            ? this.repository.apply(request.changes, false)
+            : this.repository.assignToProgram(record.assignedCountryIds)
+        ).catch(async (error: Error) => {
+            await this.repository.saveHistory({ ...record, status: "failed", errors: [error.message] });
+            throw error;
+        });
 
         await this.repository.saveHistory({
             ...record,

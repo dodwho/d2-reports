@@ -57,6 +57,16 @@ export function selectSignals(signals: EARSubmissionItemIdentifier[]) {
  * (changed or deleted by someone else since the user saw it) refuses the whole change. Other entries for the same
  * module, country and period (older app versions stored duplicates) are left as they are.
  */
+/**
+ * The time of a new status change, as the GLASS app stamps it (`nextChangedAt` in glass-dev). The submissions program
+ * orders changes by time only, so a browser clock behind the latest change's would put the new status before the
+ * current one: never earlier than 1 ms after the latest stored change.
+ */
+export function nextChangedAt(history: { changedAt: string }[], now: Date): string {
+    const latest = Math.max(-Infinity, ...history.map(item => Date.parse(item.changedAt)).filter(time => !isNaN(time)));
+    return new Date(Math.max(now.getTime(), latest + 1)).toISOString();
+}
+
 export function planStatusChange<T extends StatusEntry>(
     entries: T[],
     change: StatusChange<T>,
@@ -80,7 +90,12 @@ export function planStatusChange<T extends StatusEntry>(
         const isChanged = change.from.includes(entry.status) && change.selected.some(isSelected => isSelected(entry));
         if (!isChanged) return entry;
 
-        const historyItem = { changedAt: now.toISOString(), from: entry.status, to: change.to, changedBy };
+        const historyItem = {
+            changedAt: nextChangedAt(entry.statusHistory, now),
+            from: entry.status,
+            to: change.to,
+            changedBy,
+        };
         return { ...entry, status: change.to, statusHistory: [...entry.statusHistory, historyItem] };
     });
 }
